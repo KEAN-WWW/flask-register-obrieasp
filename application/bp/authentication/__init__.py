@@ -14,14 +14,15 @@ def registration():
     if form.validate_on_submit():
         existing_user = User.query.filter_by(email=form.email.data).first()
         if existing_user:
-            flash('Email already registered.', 'danger')
+            flash('Already Registered', 'danger')
             return redirect(url_for('authentication.registration'))
 
-        new_user = User(username=form.username.data, email=form.email.data)
-        new_user.set_password(form.password.data)  # Assuming set_password hashes the password
+        # Use the updated create method to create the user
+        new_user = User.create(form.email.data, form.password.data)
         db.session.add(new_user)
         db.session.commit()
+
         flash('Registration successful! Please log in.', 'success')
         return redirect(url_for('authentication.dashboard'))
 
-    return render_template('register.html', form=form)
+    return render_template('registration.html', form=form)

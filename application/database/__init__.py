@@ -2,23 +2,32 @@
 Database Initialization and Models
 """
 from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import generate_password_hash, check_password_hash
 
 db = SQLAlchemy()
 
-
 class User(db.Model):
-    """User Model"""
     id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(128))
-    password = db.Column(db.String(128))
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(128), nullable=False)
 
-    def __init__(self, email, password):
+    def __init__(self, email):
         self.email = email
-        self.password = password
+        self.password_hash = None  # Set this to None initially, since it will be set later.
 
     @classmethod
     def create(cls, email, password):
-        return cls(email, password)
+        user = cls(email=email)  # Only email is passed here.
+        user.set_password(password)  # Set the password via the set_password method.
+        return user
+
+    def set_password(self, password):
+        """Set the hashed password"""
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        """Check if the provided password matches the stored hash."""
+        return check_password_hash(self.password_hash, password)
 
     @classmethod
     def all(cls):
